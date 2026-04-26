@@ -1,0 +1,61 @@
+import { invoke as tauriInvoke } from '@tauri-apps/api/core';
+import { open as tauriOpen, save as tauriSave } from '@tauri-apps/plugin-dialog';
+import { getCurrentWindow } from '@tauri-apps/api/window';
+import type { AppWindowHandle, OpenFileDialogOptions, Platform, SaveFileDialogOptions } from './types';
+
+const APP_LOGO_SRC = new URL('../../src-tauri/icons/128x128.png', import.meta.url).href;
+
+function createAppWindowHandle(): AppWindowHandle | null {
+  try {
+    const w = getCurrentWindow();
+    return {
+      startDragging: () => w.startDragging(),
+      toggleMaximize: () => w.toggleMaximize(),
+      minimize: () => w.minimize(),
+      close: () => w.close(),
+    };
+  } catch {
+    return null;
+  }
+}
+
+export const platform: Platform = {
+  kind: 'tauri',
+  supportsNativeWindowControls: true,
+  supportsExternalWatch: true,
+  supportsDownloadExport: false,
+  invoke: <T>(command: string, args?: Record<string, unknown>) =>
+    tauriInvoke<T>(command, args),
+
+  openDialog: async (options?: OpenFileDialogOptions) => {
+    const selected = await tauriOpen({
+      directory: options?.directory ?? false,
+      multiple: false,
+      filters: options?.filters,
+    });
+    return typeof selected === 'string' ? selected : null;
+  },
+
+  saveDialog: async (options?: SaveFileDialogOptions) => {
+    const selected = await tauriSave({
+      title: options?.title,
+      defaultPath: options?.defaultPath,
+      filters: options?.filters,
+      canCreateDirectories: options?.canCreateDirectories,
+    });
+    return typeof selected === 'string' ? selected : null;
+  },
+
+  getAppWindow: () => appWindowHandle,
+  getAppLogoSrc: () => APP_LOGO_SRC,
+  downloadDocument: async () => {
+    throw new Error('Download export is available in the web demo only.');
+  },
+};
+
+let appWindowHandle: AppWindowHandle | null = null;
+try {
+  appWindowHandle = createAppWindowHandle();
+} catch {
+  appWindowHandle = null;
+}

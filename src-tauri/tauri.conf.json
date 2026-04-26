@@ -1,0 +1,51 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "IORY",
+  "version": "0.1.0",
+  "identifier": "com.ymkn.iory",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "IORY",
+        "width": 1200,
+        "height": 720,
+        "minWidth": 1200,
+        "minHeight": 720,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": false,
+        "visible": true
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self' customprotocol: asset: data: blob:",
+        "connect-src": "'self' ipc: http://ipc.localhost",
+        "img-src": "'self' asset: data: blob:",
+        "style-src": "'self' 'unsafe-inline'",
+        "font-src": "'self' asset: data:",
+        "media-src": "'self' asset: data: blob:",
+        "object-src": "'none'",
+        "frame-ancestors": "'none'"
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}
