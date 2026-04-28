@@ -37,6 +37,46 @@ export type WritingEditorHandle = {
 const themeCompartment = new Compartment();
 const externalChangeAnnotation = Annotation.define<boolean>();
 
+/**
+ * Handles Enter on lines whose leading whitespace contains non-ASCII characters
+ * (e.g. full-width spaces U+3000). CodeMirror's default insertNewlineAndIndent
+ * reconstructs indentation from a column count via indentString, which only
+ * produces ASCII spaces/tabs — destroying non-ASCII whitespace.
+ */
+function handleNewlinePreserveIndent(view: EditorView): boolean {
+  const { state } = view;
+  if (state.readOnly) return false;
+
+  let hasNonAsciiIndent = false;
+  for (const range of state.selection.ranges) {
+    const line = state.doc.lineAt(range.from);
+    const leading = /^\s*/.exec(line.text)![0];
+    if (leading && /[^\t ]/.test(leading)) {
+      hasNonAsciiIndent = true;
+      break;
+    }
+  }
+
+  if (!hasNonAsciiIndent) return false;
+
+  view.dispatch(
+    state.update(
+      state.changeByRange((range) => {
+        const line = state.doc.lineAt(range.from);
+        const leading = /^\s*/.exec(line.text)![0];
+        const insert = state.lineBreak + leading;
+        return {
+          changes: { from: range.from, to: range.to, insert },
+          range: EditorSelection.cursor(range.from + leading.length + 1),
+        };
+      }),
+      { scrollIntoView: true, userEvent: "input.type" },
+    ),
+  );
+
+  return true;
+}
+
 function buildTheme(fontSize: number, lineHeight: number) {
   return EditorView.theme({
     '&': {
@@ -182,7 +222,12 @@ export const WritingEditor = forwardRef<WritingEditorHandle, WritingEditorProps>
           history(),
           search(),
           markdown(),
-          keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap]),
+          keymap.of([
+            { key: "Enter", run: handleNewlinePreserveIndent, shift: handleNewlinePreserveIndent },
+            ...defaultKeymap,
+            ...historyKeymap,
+            ...searchKeymap,
+          ]),
           EditorView.lineWrapping,
           themeCompartment.of(buildTheme(fontSize, lineHeight)),
           EditorView.updateListener.of((update) => {
