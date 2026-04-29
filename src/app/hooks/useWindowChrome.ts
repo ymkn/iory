@@ -97,6 +97,26 @@ export function useWindowChrome({ isDirty, handleSaveFile, setLastEvent, editorR
     await fullscreenDocument.documentElement.requestFullscreen();
   }, []);
 
+  const handleExitFullscreen = useCallback(async () => {
+    const appWindow = appWindowRef.current;
+    if (appWindow) {
+      const active = await appWindow.isFullscreen();
+      if (!active) {
+        return;
+      }
+
+      await appWindow.setFullscreen(false);
+      setIsFullscreen(false);
+      setIsFullscreenChromeVisible(true);
+      return;
+    }
+
+    const fullscreenDocument = document as FullscreenFallbackDocument;
+    if (fullscreenDocument.fullscreenElement) {
+      await fullscreenDocument.exitFullscreen();
+    }
+  }, []);
+
   const handleTitlebarMouseDown = useCallback(async (event: ReactMouseEvent<HTMLDivElement>) => {
     if (event.button !== 0) {
       return;
@@ -140,6 +160,7 @@ export function useWindowChrome({ isDirty, handleSaveFile, setLastEvent, editorR
     showFullscreenChrome,
     hideFullscreenChrome,
     handleFullscreen,
+    handleExitFullscreen,
     handleTitlebarMouseDown,
     handleMinimize,
     handleToggleMaximize,
