@@ -13,6 +13,9 @@ function createAppWindowHandle(): AppWindowHandle | null {
       toggleMaximize: () => w.toggleMaximize(),
       minimize: () => w.minimize(),
       close: () => w.close(),
+      setFullscreen: (fullscreen) => w.setFullscreen(fullscreen),
+      isFullscreen: () => w.isFullscreen(),
+      onResized: async (handler) => w.onResized(() => handler()),
     };
   } catch {
     return null;

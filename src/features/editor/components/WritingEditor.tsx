@@ -4,6 +4,9 @@ import { search, searchKeymap } from '@codemirror/search';
 import { Annotation, Compartment, EditorSelection, EditorState } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { applyExactCodepointSearch } from '../search-patch';
+
+applyExactCodepointSearch();
 
 type WritingEditorProps = {
   value: string;

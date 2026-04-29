@@ -816,6 +816,109 @@ select {
   min-height: 0;
 }
 
+/* ── CodeMirror search panel ─────────────────────────── */
+
+.writing-editor-host .cm-panels {
+  background: var(--bg-overlay);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 6px 10px;
+}
+
+.writing-editor-host .cm-panels input,
+.writing-editor-host .cm-panels button {
+  font-family: var(--ui-font-family, Inter, "Noto Sans JP", system-ui, sans-serif);
+  font-size: 12px;
+}
+
+.writing-editor-host .cm-textfield {
+  border: none;
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-primary);
+  padding: 4px 2px 5px;
+  outline: none;
+  box-shadow: none;
+}
+
+.writing-editor-host .cm-textfield:focus {
+  border-bottom-color: color-mix(in srgb, var(--selection-background) 65%, var(--text-primary));
+}
+
+.writing-editor-host .cm-button {
+  border: none;
+  border-radius: 3px;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.writing-editor-host .cm-button:hover {
+  background: var(--bg-subtle);
+}
+
+.writing-editor-host .cm-button.cm-primaryButton {
+  background: var(--accent-primary);
+  color: var(--accent-primary-text);
+}
+
+.writing-editor-host .cm-search label {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.writing-editor-host .cm-panel.cm-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: center;
+}
+
+.writing-editor-host .cm-panel.cm-search input[type="checkbox"] {
+  accent-color: var(--text-secondary);
+  margin: 0 3px 0 0;
+  vertical-align: middle;
+}
+
+/* ── CodeMirror go-to-line dialog ────────────────────── */
+
+.writing-editor-host .cm-dialog {
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  box-shadow: var(--shadow-editor);
+  padding: 12px 14px;
+}
+
+.writing-editor-host .cm-dialog input.cm-textfield {
+  width: 100%;
+}
+
+.writing-editor-host .cm-dialog-close {
+  color: var(--text-muted);
+}
+
+.writing-editor-host .cm-dialog-close:hover {
+  color: var(--text-secondary);
+}
+
+/* ── Search / selection match highlights ─────────────── */
+
+.writing-editor-host .cm-searchMatch {
+  background: var(--bg-hover);
+  border-radius: 2px;
+}
+
+.writing-editor-host .cm-searchMatch-selected {
+  background: color-mix(in srgb, var(--selection-background) 70%, var(--text-muted));
+}
+
+.writing-editor-host .cm-selectionMatch {
+  background: color-mix(in srgb, var(--selection-background) 40%, transparent);
+}
+
 .spike-footer {
   width: min(1200px, 100%);
   margin: 0 auto;
