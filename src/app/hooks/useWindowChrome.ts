@@ -2,6 +2,10 @@ import { platform, type AppWindowHandle } from '../../platform';
 import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type RefObject } from 'react';
 import type { WritingEditorHandle } from '../../features/editor/components/WritingEditor';
 
+type FullscreenFallbackDocument = Pick<Document, 'fullscreenElement' | 'exitFullscreen'> & {
+  documentElement: Pick<HTMLElement, 'requestFullscreen'>;
+};
+
 type UseWindowChromeArgs = {
   isDirty: boolean;
   handleSaveFile: (reason: 'close') => Promise<void>;
@@ -19,6 +23,39 @@ export function useWindowChrome({ isDirty, handleSaveFile, setLastEvent, editorR
   }, []);
 
   useEffect(() => {
+    let unlisten: (() => void) | null = null;
+    let disposed = false;
+
+    const syncFullscreenState = async () => {
+      const appWindow = appWindowRef.current;
+      const active = appWindow ? await appWindow.isFullscreen() : Boolean(document.fullscreenElement);
+      if (disposed) {
+        return;
+      }
+
+      setIsFullscreen(active);
+      setIsFullscreenChromeVisible(!active);
+    };
+
+    const appWindow = appWindowRef.current;
+    if (appWindow) {
+      void syncFullscreenState();
+      void appWindow.onResized(() => {
+        void syncFullscreenState();
+      }).then((cleanup) => {
+        if (disposed) {
+          cleanup();
+          return;
+        }
+        unlisten = cleanup;
+      });
+
+      return () => {
+        disposed = true;
+        unlisten?.();
+      };
+    }
+
     const handleFullscreenChange = () => {
       const active = Boolean(document.fullscreenElement);
       setIsFullscreen(active);
@@ -28,6 +65,7 @@ export function useWindowChrome({ isDirty, handleSaveFile, setLastEvent, editorR
     document.addEventListener('fullscreenchange', handleFullscreenChange);
 
     return () => {
+      disposed = true;
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
   }, []);
@@ -40,13 +78,23 @@ export function useWindowChrome({ isDirty, handleSaveFile, setLastEvent, editorR
     setIsFullscreenChromeVisible(false);
   }, []);
 
-  const handleFullscreen = useCallback(() => {
-    if (document.fullscreenElement) {
-      void document.exitFullscreen();
+  const handleFullscreen = useCallback(async () => {
+    const appWindow = appWindowRef.current;
+    if (appWindow) {
+      const nextFullscreen = !(await appWindow.isFullscreen());
+      await appWindow.setFullscreen(nextFullscreen);
+      setIsFullscreen(nextFullscreen);
+      setIsFullscreenChromeVisible(!nextFullscreen);
       return;
     }
 
-    void document.documentElement.requestFullscreen();
+    const fullscreenDocument = document as FullscreenFallbackDocument;
+    if (fullscreenDocument.fullscreenElement) {
+      await fullscreenDocument.exitFullscreen();
+      return;
+    }
+
+    await fullscreenDocument.documentElement.requestFullscreen();
   }, []);
 
   const handleTitlebarMouseDown = useCallback(async (event: ReactMouseEvent<HTMLDivElement>) => {

@@ -35,6 +35,9 @@ export type AppWindowHandle = {
   toggleMaximize: () => Promise<void>;
   minimize: () => Promise<void>;
   close: () => Promise<void>;
+  setFullscreen: (fullscreen: boolean) => Promise<void>;
+  isFullscreen: () => Promise<boolean>;
+  onResized: (handler: () => void) => Promise<() => void>;
 };
 
 export type Platform = {
