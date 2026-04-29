@@ -13,10 +13,17 @@ type UseAppHotkeysArgs = {
   saveStatus: SaveStatus;
   handleOpenFileDialog: () => Promise<void>;
   handleNewFile: () => Promise<void>;
+  isFullscreen: boolean;
+  supportsNativeWindowControls: boolean;
+  handleExitFullscreen: () => Promise<void>;
   toggleOverlayPanel: (panel: Exclude<OverlayPanel, 'none'>) => void;
   setRestoreTargetEntry: (entry: FileHistoryEntry | null) => void;
   setPreviewEntry: (entry: FileHistoryEntry | null) => void;
 };
+
+export function shouldExitFullscreenOnEscape(event: Pick<KeyboardEvent, 'defaultPrevented'>, state: { isFullscreen: boolean; supportsNativeWindowControls: boolean }) {
+  return state.supportsNativeWindowControls && state.isFullscreen && !event.defaultPrevented;
+}
 
 export function useAppHotkeys({
   restoreTargetEntry,
@@ -28,6 +35,9 @@ export function useAppHotkeys({
   saveStatus,
   handleOpenFileDialog,
   handleNewFile,
+  isFullscreen,
+  supportsNativeWindowControls,
+  handleExitFullscreen,
   toggleOverlayPanel,
   setRestoreTargetEntry,
   setPreviewEntry,
@@ -51,6 +61,12 @@ export function useAppHotkeys({
           event.preventDefault();
           closeOverlayPanel();
           refocusTextarea('after-overlay-close');
+          return;
+        }
+
+        if (shouldExitFullscreenOnEscape(event, { isFullscreen, supportsNativeWindowControls })) {
+          event.preventDefault();
+          void handleExitFullscreen();
         }
 
         return;
@@ -101,5 +117,5 @@ export function useAppHotkeys({
     return () => {
       window.removeEventListener('keydown', handleKeydown);
     };
-  }, [closeOverlayPanel, handleNewFile, handleOpenFileDialog, isComposing, isOverlayOpen, previewEntry, refocusTextarea, restoreTargetEntry, saveStatus, setPreviewEntry, setRestoreTargetEntry, toggleOverlayPanel]);
+  }, [closeOverlayPanel, handleExitFullscreen, handleNewFile, handleOpenFileDialog, isComposing, isFullscreen, isOverlayOpen, previewEntry, refocusTextarea, restoreTargetEntry, saveStatus, setPreviewEntry, setRestoreTargetEntry, supportsNativeWindowControls, toggleOverlayPanel]);
 }
