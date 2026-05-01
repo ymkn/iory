@@ -89,9 +89,16 @@ function buildTheme(fontSize: number, lineHeight: number) {
       fontSize: `${fontSize}px`,
     },
     '.cm-scroller': {
-      fontFamily: 'var(--editor-font-family)',
+      fontFamily: 'var(--editor-font-family), var(--editor-cjk-monospace-fallback)',
+      fontFeatureSettings: '"palt" 0, "pkna" 0, "halt" 0, "vhal" 0, "kern" 0, "liga" 0, "calt" 0',
+      fontKerning: 'none',
+      fontVariantEastAsian: 'full-width',
+      fontVariantLigatures: 'none',
+      letterSpacing: 'normal',
       lineHeight: String(lineHeight),
       overflow: 'auto',
+      textAutospace: 'no-autospace',
+      textSpacingTrim: 'space-all',
     },
     '.cm-content': {
       minHeight: 'var(--editor-min-height)',

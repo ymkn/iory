@@ -3,6 +3,7 @@
   font-family: var(--ui-font-family, Inter, "Noto Sans JP", system-ui, sans-serif);
   --ui-font-family: Inter, "Noto Sans JP", system-ui, sans-serif;
   --editor-font-family: Inter, "Noto Sans JP", system-ui, sans-serif;
+  --editor-cjk-monospace-fallback: "BIZ UDGothic", "Yu Gothic", "MS Gothic", ui-monospace, monospace;
   --editor-font-size: 22px;
   --editor-line-height: 2;
   --editor-max-width: 820px;
@@ -767,9 +768,16 @@ select {
   outline: none;
   background: transparent;
   color: var(--text-primary);
+  font-family: var(--editor-font-family), var(--editor-cjk-monospace-fallback);
+  font-feature-settings: "palt" 0, "pkna" 0, "halt" 0, "vhal" 0, "kern" 0, "liga" 0, "calt" 0;
+  font-kerning: none;
+  font-variant-east-asian: full-width;
+  font-variant-ligatures: none;
   font-size: clamp(1.15rem, 2vw, 1.4rem);
   line-height: var(--editor-line-height);
-  letter-spacing: 0.01em;
+  letter-spacing: normal;
+  text-autospace: no-autospace;
+  text-spacing-trim: space-all;
 }
 
 .writing-editor-host {
@@ -1294,7 +1302,14 @@ select {
   overflow: auto;
   white-space: pre-wrap;
   word-break: break-word;
-  font-family: var(--editor-font-family);
+  font-family: var(--editor-font-family), var(--editor-cjk-monospace-fallback);
+  font-feature-settings: "palt" 0, "pkna" 0, "halt" 0, "vhal" 0, "kern" 0, "liga" 0, "calt" 0;
+  font-kerning: none;
+  font-variant-east-asian: full-width;
+  font-variant-ligatures: none;
+  letter-spacing: normal;
+  text-autospace: no-autospace;
+  text-spacing-trim: space-all;
   color: var(--text-primary);
   line-height: 1.65;
 }
