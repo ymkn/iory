@@ -1,0 +1,105 @@
+name: Release Windows Installer
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - src-tauri/tauri.conf.json
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-windows-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect version bump
+        id: version
+        shell: pwsh
+        run: |
+          $configPath = "src-tauri/tauri.conf.json"
+          $current = (Get-Content $configPath -Raw | ConvertFrom-Json).version
+
+          $previousContent = git show "HEAD^:$configPath" 2>$null
+          if (-not $previousContent) {
+            "changed=false" >> $env:GITHUB_OUTPUT
+            "version=$current" >> $env:GITHUB_OUTPUT
+            Write-Host "Previous Tauri config was not found. Skipping release."
+            exit 0
+          }
+
+          $previous = ($previousContent | Out-String | ConvertFrom-Json).version
+          "version=$current" >> $env:GITHUB_OUTPUT
+
+          if ($current -eq $previous) {
+            "changed=false" >> $env:GITHUB_OUTPUT
+            Write-Host "Version unchanged ($current). Skipping release."
+            exit 0
+          }
+
+          "changed=true" >> $env:GITHUB_OUTPUT
+          Write-Host "Version changed: $previous -> $current"
+
+      - name: Check existing release
+        id: existing_release
+        if: steps.version.outputs.changed == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tagName = "v${{ steps.version.outputs.version }}"
+          gh release view $tagName --repo "${{ github.repository }}" *> $null
+
+          if ($LASTEXITCODE -eq 0) {
+            "exists=true" >> $env:GITHUB_OUTPUT
+            Write-Host "Release $tagName already exists. Skipping release."
+            exit 0
+          }
+
+          "exists=false" >> $env:GITHUB_OUTPUT
+          Write-Host "Release $tagName does not exist yet."
+
+      - name: Setup Node
+        if: steps.version.outputs.changed == 'true' && steps.existing_release.outputs.exists == 'false'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.version.outputs.changed == 'true' && steps.existing_release.outputs.exists == 'false'
+        run: npm ci
+
+      - name: Install Rust stable
+        if: steps.version.outputs.changed == 'true' && steps.existing_release.outputs.exists == 'false'
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build
+        if: steps.version.outputs.changed == 'true' && steps.existing_release.outputs.exists == 'false'
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: ./src-tauri -> target
+
+      - name: Build installer and create release
+        if: steps.version.outputs.changed == 'true' && steps.existing_release.outputs.exists == 'false'
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__
+          releaseName: IORY v__VERSION__
+          releaseBody: Windows installer for IORY v__VERSION__.
+          releaseDraft: false
+          prerelease: false
+          uploadUpdaterJson: false
+          args: --bundles nsis
