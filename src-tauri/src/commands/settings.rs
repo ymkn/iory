@@ -54,5 +54,9 @@ fn normalize_settings(mut settings: AppSettings) -> AppSettings {
     settings.theme_id = "night-blue".to_string();
   }
 
+  if settings.cursor_style != "block" {
+    settings.cursor_style = "line".to_string();
+  }
+
   settings
 }

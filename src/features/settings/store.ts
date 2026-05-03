@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { loadSettings, saveSettings } from './api';
-import { DEFAULT_SETTINGS, SETTINGS_VERSION, type BackgroundMode, type CountMode, type PersistedSettings, type SettingsValues, type ThemeId } from './types';
+import { DEFAULT_SETTINGS, SETTINGS_VERSION, type BackgroundMode, type CountMode, type CursorStyle, type PersistedSettings, type SettingsValues, type ThemeId } from './types';
 
 type SettingsState = SettingsValues & {
   isHydrated: boolean;
@@ -11,6 +11,7 @@ type SettingsState = SettingsValues & {
   setUiFontFamily: (uiFontFamily: string) => Promise<void>;
   setEditorFontFamily: (editorFontFamily: string) => Promise<void>;
   setCountMode: (countMode: CountMode) => Promise<void>;
+  setCursorStyle: (cursorStyle: CursorStyle) => Promise<void>;
   setFontSize: (fontSize: number) => Promise<void>;
   setLineHeight: (lineHeight: number) => Promise<void>;
   setEditorMaxWidth: (editorMaxWidth: number) => Promise<void>;
@@ -92,6 +93,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
           uiFontFamily: settings.uiFontFamily,
           editorFontFamily: settings.editorFontFamily,
           countMode: settings.countMode,
+          cursorStyle: settings.cursorStyle,
           fontSize: settings.fontSize,
           lineHeight: settings.lineHeight,
           editorMaxWidth: settings.editorMaxWidth,
@@ -121,6 +123,9 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     },
     setCountMode: async (countMode) => {
       await persist({ countMode });
+    },
+    setCursorStyle: async (cursorStyle) => {
+      await persist({ cursorStyle });
     },
     setFontSize: async (fontSize) => {
       await persist({ fontSize });

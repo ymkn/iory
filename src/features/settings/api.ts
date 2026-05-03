@@ -11,6 +11,7 @@ type SettingsWire = {
   uiFontFamily: string;
   editorFontFamily: string;
   countMode: string;
+  cursorStyle?: string;
   fontSize: number;
   lineHeight: number;
   editorWidth: number;
@@ -30,6 +31,16 @@ function normalizeThemeId(themeId: string): PersistedSettings['themeId'] {
   }
 }
 
+function normalizeCursorStyle(cursorStyle: string | undefined): PersistedSettings['cursorStyle'] {
+  switch (cursorStyle) {
+    case 'block':
+    case 'line':
+      return cursorStyle;
+    default:
+      return 'line';
+  }
+}
+
 function fromWire(settings: SettingsWire): PersistedSettings {
   return {
     version: settings.version,
@@ -39,6 +50,7 @@ function fromWire(settings: SettingsWire): PersistedSettings {
     uiFontFamily: settings.uiFontFamily,
     editorFontFamily: settings.editorFontFamily,
     countMode: settings.countMode as PersistedSettings['countMode'],
+    cursorStyle: normalizeCursorStyle(settings.cursorStyle),
     fontSize: settings.fontSize,
     lineHeight: settings.lineHeight,
     editorMaxWidth: settings.editorWidth,
@@ -56,6 +68,7 @@ function toWire(settings: SettingsValues): SettingsWire {
     uiFontFamily: settings.uiFontFamily,
     editorFontFamily: settings.editorFontFamily,
     countMode: settings.countMode,
+    cursorStyle: settings.cursorStyle,
     fontSize: settings.fontSize,
     lineHeight: settings.lineHeight,
     editorWidth: settings.editorMaxWidth,

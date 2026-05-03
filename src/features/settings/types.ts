@@ -1,6 +1,7 @@
 export type ThemeId = 'night-blue' | 'snow' | 'ash' | 'warm-paper';
 export type BackgroundMode = 'soft' | 'plain';
 export type CountMode = 'characters' | 'words';
+export type CursorStyle = 'line' | 'block';
 
 export type SettingsValues = {
   themeId: ThemeId;
@@ -9,6 +10,7 @@ export type SettingsValues = {
   uiFontFamily: string;
   editorFontFamily: string;
   countMode: CountMode;
+  cursorStyle: CursorStyle;
   fontSize: number;
   lineHeight: number;
   editorMaxWidth: number;
@@ -29,6 +31,7 @@ export const DEFAULT_SETTINGS: SettingsValues = {
   uiFontFamily: 'Inter, "Noto Sans JP", system-ui, sans-serif',
   editorFontFamily: 'Inter, "Noto Sans JP", system-ui, sans-serif',
   countMode: 'characters',
+  cursorStyle: 'line',
   fontSize: 14,
   lineHeight: 2,
   editorMaxWidth: 820,
