@@ -700,6 +700,11 @@ select {
   pointer-events: auto;
 }
 
+.mobile-workspace-tabs,
+.mobile-focus-tab-reveal {
+  display: none;
+}
+
 .side-pane-card {
   display: grid;
   gap: 10px;
@@ -1777,9 +1782,32 @@ select {
     grid-template-columns: 1fr;
   }
 
+  .workspace-layout {
+    max-width: none;
+    overflow: hidden;
+  }
+
   .editor-focus-layout,
+  .editor-focus-layout.is-focus,
   .editor-focus-layout:not(.is-focus) {
-    grid-template-columns: 1fr;
+    --mobile-workspace-offset: -33.3333%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    width: 300%;
+    transition: transform 220ms ease;
+    transform: translateX(var(--mobile-workspace-offset));
+  }
+
+  .editor-focus-layout[data-mobile-tab='files'] {
+    --mobile-workspace-offset: 0;
+  }
+
+  .editor-focus-layout[data-mobile-tab='history'] {
+    --mobile-workspace-offset: -66.6667%;
+  }
+
+  .editor-frame.is-focus:not(.is-mobile-focus-revealed) .editor-focus-layout {
+    --mobile-workspace-offset: -33.3333%;
   }
 
   .focus-margin-trigger {
@@ -1787,20 +1815,130 @@ select {
   }
 
   .editor-side-pane {
-    display: none;
+    display: block;
+    width: 100%;
+    justify-self: stretch;
+    padding-right: 24px;
+    padding-left: 24px;
   }
 
-  .editor-side-pane.is-visible {
-    display: block;
+  .editor-side-pane.is-collapsed {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .editor-side-pane.is-collapsed.is-mobile-selected {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .editor-side-pane.is-collapsed.is-mobile-selected > :not(.focus-margin-trigger) {
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .editor-frame {
-    padding: 5em 0 20px;
+    overflow: hidden;
+    padding-bottom: 76px;
   }
 
-  .editor-core-column,
-  .editor-side-pane {
+  .editor-frame.is-focus {
+    padding-bottom: 20px;
+  }
+
+  .editor-core-column {
     padding: 2.5rem 0;
+  }
+
+  .mobile-workspace-tabs {
+    position: fixed;
+    left: 50%;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    width: auto;
+    padding: 8px 12px;
+    transform: translateX(-50%);
+    border: none;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg-overlay) 78%, transparent);
+    backdrop-filter: blur(18px);
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 1000ms ease;
+  }
+
+  .workspace-layout.is-focus .mobile-workspace-tabs {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .workspace-layout.is-focus .mobile-workspace-tabs.is-focus-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .editor-frame.is-focus.is-mobile-focus-revealed .editor-word-count {
+    opacity: 0.82;
+  }
+
+  .mobile-focus-tab-reveal {
+    position: fixed;
+    left: 50%;
+    bottom: 0;
+    z-index: 19;
+    display: block;
+    width: min(180px, 56vw);
+    height: max(54px, calc(40px + env(safe-area-inset-bottom)));
+    padding: 0;
+    transform: translateX(-50%);
+    border: none;
+    background: transparent;
+    color: transparent;
+    cursor: pointer;
+  }
+
+  .workspace-layout:not(.is-focus) .mobile-focus-tab-reveal {
+    display: none;
+  }
+
+  .mobile-workspace-tab {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .mobile-workspace-tab span {
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0.58;
+    transition: opacity 160ms ease, transform 160ms ease, background-color 160ms ease;
+  }
+
+  .mobile-workspace-tab.is-active {
+    color: var(--text-primary);
+  }
+
+  .mobile-workspace-tab.is-active span {
+    opacity: 0.94;
+    transform: scale(1.45);
+  }
+
+  .mobile-workspace-tab:focus-visible {
+    outline: 1px solid color-mix(in srgb, var(--selection-background) 70%, transparent);
+    outline-offset: 3px;
   }
 
   .overlay-root {
