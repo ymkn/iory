@@ -59,7 +59,7 @@ export function App() {
     reset,
   } = useEditorStore();
   const { isFocusMode, overlayPanel, overlaySource, toggleFocusMode, openOverlayPanel, openOverlayPanelFromHover, closeOverlayPanel, closeHoverOverlayPanel, toggleOverlayPanel } = useFocusStore();
-  const { isHydrated, themeId, backgroundMode, showBackgroundImage, uiFontFamily, editorFontFamily, countMode, fontSize, lineHeight, editorMaxWidth, checkpointIntervalMs, hydrate } = useSettingsStore();
+  const { isHydrated, themeId, backgroundMode, showBackgroundImage, uiFontFamily, editorFontFamily, countMode, cursorStyle, fontSize, lineHeight, editorMaxWidth, checkpointIntervalMs, hydrate } = useSettingsStore();
 
   const stats = useMemo(() => calculateDocumentStats(text), [text]);
   const isDirty = Boolean(currentFilePath) && saveStatus === 'dirty';
@@ -290,6 +290,7 @@ export function App() {
           <>
             <Suspense fallback={<div aria-label="loading editor" className="writing-editor-fallback"><span className="loading-spinner" /></div>}>
               <WritingEditor
+                cursorStyle={cursorStyle}
                 fontSize={fontSize}
                 initialSnapshot={editorRestoreState?.epoch === editorEpoch ? editorRestoreState.snapshot : null}
                 key={editorEpoch}

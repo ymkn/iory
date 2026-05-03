@@ -2,7 +2,7 @@ import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { markdown } from '@codemirror/lang-markdown';
 import { search, searchKeymap } from '@codemirror/search';
 import { Annotation, Compartment, EditorSelection, EditorState } from '@codemirror/state';
-import { EditorView, keymap } from '@codemirror/view';
+import { drawSelection, EditorView, keymap } from '@codemirror/view';
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { applyExactCodepointSearch } from '../search-patch';
 
@@ -10,6 +10,7 @@ applyExactCodepointSearch();
 
 type WritingEditorProps = {
   value: string;
+  cursorStyle: 'line' | 'block';
   fontSize: number;
   lineHeight: number;
   initialSnapshot?: WritingEditorSnapshot | null;
@@ -80,7 +81,9 @@ function handleNewlinePreserveIndent(view: EditorView): boolean {
   return true;
 }
 
-function buildTheme(fontSize: number, lineHeight: number) {
+function buildTheme(fontSize: number, lineHeight: number, cursorStyle: 'line' | 'block') {
+  const blockCursorWidth = `${Math.max(8, Math.round(fontSize * 0.62))}px`;
+
   return EditorView.theme({
     '&': {
       height: '100%',
@@ -126,11 +129,24 @@ function buildTheme(fontSize: number, lineHeight: number) {
     '&.cm-focused': {
       outline: 'none',
     },
+    ...(cursorStyle === 'block'
+      ? {
+          '&.cm-focused .cm-cursor': {
+            borderLeft: 'none',
+            borderRadius: '1px',
+            backgroundColor: 'color-mix(in srgb, var(--text-primary) 82%, transparent)',
+            width: blockCursorWidth,
+          },
+          '&.cm-focused .cm-cursor-primary': {
+            marginLeft: '0',
+          },
+        }
+      : {}),
   });
 }
 
 export const WritingEditor = forwardRef<WritingEditorHandle, WritingEditorProps>(function WritingEditor(props, ref) {
-  const { value, fontSize, initialSnapshot, lineHeight, onChange, onFocus, onBlur, onCompositionStart, onCompositionEnd, onManualSave } = props;
+  const { value, cursorStyle, fontSize, initialSnapshot, lineHeight, onChange, onFocus, onBlur, onCompositionStart, onCompositionEnd, onManualSave } = props;
   const hostRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
   const latestValueRef = useRef(value);
@@ -239,7 +255,8 @@ export const WritingEditor = forwardRef<WritingEditorHandle, WritingEditorProps>
             ...searchKeymap,
           ]),
           EditorView.lineWrapping,
-          themeCompartment.of(buildTheme(fontSize, lineHeight)),
+          drawSelection(),
+          themeCompartment.of(buildTheme(fontSize, lineHeight, cursorStyle)),
           EditorView.updateListener.of((update) => {
             if (update.docChanged && !update.transactions.some((transaction) => transaction.annotation(externalChangeAnnotation))) {
               const nextValue = update.state.doc.toString();
@@ -309,9 +326,9 @@ export const WritingEditor = forwardRef<WritingEditorHandle, WritingEditorProps>
     }
 
     view.dispatch({
-      effects: themeCompartment.reconfigure(buildTheme(fontSize, lineHeight)),
+      effects: themeCompartment.reconfigure(buildTheme(fontSize, lineHeight, cursorStyle)),
     });
-  }, [fontSize, lineHeight]);
+  }, [cursorStyle, fontSize, lineHeight]);
 
   useEffect(() => {
     const view = viewRef.current;

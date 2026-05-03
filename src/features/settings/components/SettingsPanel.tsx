@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import packageJson from '../../../../package.json';
-import { THEME_OPTIONS, type CountMode } from '../types';
+import { THEME_OPTIONS, type CountMode, type CursorStyle } from '../types';
 import { useSettingsStore } from '../store';
 
 type ThemeSelectorFieldProps = {
@@ -48,6 +48,7 @@ export function SettingsPanel({ compact = false }: { compact?: boolean }) {
     uiFontFamily,
     editorFontFamily,
     countMode,
+    cursorStyle,
     fontSize,
     lineHeight,
     editorMaxWidth,
@@ -57,6 +58,7 @@ export function SettingsPanel({ compact = false }: { compact?: boolean }) {
     setUiFontFamily,
     setEditorFontFamily,
     setCountMode,
+    setCursorStyle,
     setFontSize,
     setLineHeight,
     setEditorMaxWidth,
@@ -127,6 +129,20 @@ export function SettingsPanel({ compact = false }: { compact?: boolean }) {
               <span aria-hidden="true" className="settings-select-caret">▾</span>
             </span>
           </span>
+        </label>
+
+        <label className="settings-field settings-field-modal-row settings-field-toggle-row">
+          <span className="settings-field-label">Block cursor</span>
+          <button
+            aria-label={cursorStyle === 'block' ? 'use line cursor' : 'use block cursor'}
+            className={`settings-toggle${cursorStyle === 'block' ? ' is-on' : ''}`}
+            onClick={() => {
+              void setCursorStyle((cursorStyle === 'block' ? 'line' : 'block') satisfies CursorStyle);
+            }}
+            type="button"
+          >
+            <span className="settings-toggle-track" />
+          </button>
         </label>
 
         <label className="settings-field settings-field-modal-row settings-field-modal-row-range-start">
