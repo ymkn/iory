@@ -6,6 +6,17 @@ import { getTextFileMetadata, readTextFile, saveDocumentAtomic } from '../worksp
 
 export type SaveReason = 'manual' | 'autosave' | 'blur' | 'switch' | 'close';
 
+export function isMetadataOnlyExternalChange(
+  diskText: string,
+  lastSavedText: string | null,
+  diskEncoding: string,
+  currentEncoding: string | null,
+  diskBom: string | null,
+  currentBom: string | null,
+) {
+  return lastSavedText !== null && diskText === lastSavedText && diskEncoding === currentEncoding && diskBom === currentBom;
+}
+
 type UseEditorPersistenceParams = {
   text: string;
   isComposing: boolean;
@@ -15,6 +26,7 @@ type UseEditorPersistenceParams = {
   currentBom: string | null;
   currentMetadata: FileMetadataSnapshot | null;
   hasLocalEditsSinceOpen: boolean;
+  lastSavedText: string | null;
   saveStatus: SaveStatus;
   isDirty: boolean;
   shouldDeferBlurSave?: () => boolean;
@@ -24,6 +36,7 @@ type UseEditorPersistenceParams = {
   setLoadError: (message: string | null) => void;
   setLastEvent: (event: string) => void;
   markSaved: (text: string, metadata: FileMetadataSnapshot) => void;
+  updateCurrentMetadata: (metadata: FileMetadataSnapshot) => void;
   setConflictSnapshot: (conflict: ConflictSnapshot | null) => void;
 };
 
@@ -36,6 +49,7 @@ export function useEditorPersistence({
   currentBom,
   currentMetadata,
   hasLocalEditsSinceOpen,
+  lastSavedText,
   saveStatus,
   isDirty,
   shouldDeferBlurSave,
@@ -45,14 +59,18 @@ export function useEditorPersistence({
   setLoadError,
   setLastEvent,
   markSaved,
+  updateCurrentMetadata,
   setConflictSnapshot,
 }: UseEditorPersistenceParams) {
   const savePromiseRef = useRef<Promise<void> | null>(null);
   const externalChangeInFlightRef = useRef(false);
   const currentFilePathRef = useRef(currentFilePath);
   const currentFileNameRef = useRef(currentFileName);
+  const currentEncodingRef = useRef(currentEncoding);
+  const currentBomRef = useRef(currentBom);
   const currentMetadataRef = useRef(currentMetadata);
   const hasLocalEditsSinceOpenRef = useRef(hasLocalEditsSinceOpen);
+  const lastSavedTextRef = useRef(lastSavedText);
   const isDirtyRef = useRef(isDirty);
   const isComposingRef = useRef(isComposing);
   const saveStatusRef = useRef(saveStatus);
@@ -66,12 +84,24 @@ export function useEditorPersistence({
   }, [currentFileName]);
 
   useEffect(() => {
+    currentEncodingRef.current = currentEncoding;
+  }, [currentEncoding]);
+
+  useEffect(() => {
+    currentBomRef.current = currentBom;
+  }, [currentBom]);
+
+  useEffect(() => {
     currentMetadataRef.current = currentMetadata;
   }, [currentMetadata]);
 
   useEffect(() => {
     hasLocalEditsSinceOpenRef.current = hasLocalEditsSinceOpen;
   }, [hasLocalEditsSinceOpen]);
+
+  useEffect(() => {
+    lastSavedTextRef.current = lastSavedText;
+  }, [lastSavedText]);
 
   useEffect(() => {
     isDirtyRef.current = isDirty;
@@ -108,6 +138,11 @@ export function useEditorPersistence({
         .then(async () => {
           const metadata = await getTextFileMetadata(currentFilePath);
           markSaved(text, metadata);
+          currentMetadataRef.current = metadata;
+          currentEncodingRef.current = currentEncoding;
+          currentBomRef.current = currentBom;
+          lastSavedTextRef.current = text;
+          saveStatusRef.current = 'saved';
 
           setLastEvent(`file:save:success:${reason}`);
         })
@@ -147,13 +182,43 @@ export function useEditorPersistence({
     externalChangeInFlightRef.current = true;
 
     try {
+      const canApplyExternalChange = () =>
+        currentFilePathRef.current === activeFilePath &&
+        !savePromiseRef.current &&
+        saveStatusRef.current !== 'conflict' &&
+        shouldPauseExternalSync?.() !== true;
+
       const metadata = await getTextFileMetadata(activeFilePath);
+
+      if (!canApplyExternalChange()) {
+        return;
+      }
 
       if (metadata.modifiedAtMs === metadataBefore.modifiedAtMs && metadata.fileSize === metadataBefore.fileSize) {
         return;
       }
 
       const result = await readTextFile(activeFilePath);
+
+      if (!canApplyExternalChange()) {
+        return;
+      }
+
+      if (
+        isMetadataOnlyExternalChange(
+          result.text,
+          lastSavedTextRef.current,
+          result.encoding,
+          currentEncodingRef.current,
+          result.bom,
+          currentBomRef.current,
+        )
+      ) {
+        updateCurrentMetadata(metadata);
+        currentMetadataRef.current = metadata;
+        setLastEvent('file:external-change:metadata-refreshed');
+        return;
+      }
 
       if (!isDirtyRef.current && !hasLocalEditsSinceOpenRef.current) {
         openDocument({
@@ -164,6 +229,11 @@ export function useEditorPersistence({
           bom: result.bom,
           metadata,
         });
+        currentMetadataRef.current = metadata;
+        currentEncodingRef.current = result.encoding;
+        currentBomRef.current = result.bom;
+        lastSavedTextRef.current = result.text;
+        saveStatusRef.current = 'saved';
         setLoadError(result.hadDecodingErrors ? `Reloaded external changes as ${result.encoding}, but some characters were replaced.` : 'Reloaded external changes.');
         setLastEvent('file:external-change:auto-reloaded');
         return;
@@ -184,7 +254,7 @@ export function useEditorPersistence({
     } finally {
       externalChangeInFlightRef.current = false;
     }
-  }, [openDocument, setConflictSnapshot, setLastEvent, setLoadError, shouldPauseExternalSync]);
+  }, [openDocument, setConflictSnapshot, setLastEvent, setLoadError, shouldPauseExternalSync, updateCurrentMetadata]);
 
   useEffect(() => {
     if (!shouldScheduleAutosave({ currentFilePath, isDirty, isComposing })) {

@@ -45,6 +45,7 @@ export function App() {
     currentBom,
     currentMetadata,
     hasLocalEditsSinceOpen,
+    lastSavedText,
     saveStatus,
     loadError,
     conflictSnapshot,
@@ -55,6 +56,7 @@ export function App() {
     setSaveStatus,
     setLoadError,
     markSaved,
+    updateCurrentMetadata,
     setConflictSnapshot,
     reset,
   } = useEditorStore();
@@ -87,6 +89,7 @@ export function App() {
     currentBom,
     currentMetadata,
     hasLocalEditsSinceOpen,
+    lastSavedText,
     saveStatus,
     isDirty,
     shouldDeferBlurSave: () => isNativeFileDialogOpenRef.current,
@@ -96,6 +99,7 @@ export function App() {
     setLoadError,
     setLastEvent,
     markSaved,
+    updateCurrentMetadata,
     setConflictSnapshot,
   });
 

@@ -35,6 +35,7 @@ type EditorState = {
   setSaveStatus: (status: SaveStatus) => void;
   setLoadError: (message: string | null) => void;
   markSaved: (text: string, metadata: FileMetadataSnapshot) => void;
+  updateCurrentMetadata: (metadata: FileMetadataSnapshot) => void;
   setConflictSnapshot: (conflict: ConflictSnapshot | null) => void;
   reset: () => void;
 };
@@ -92,6 +93,7 @@ export const useEditorStore = create<EditorState>((set) => ({
       loadError: null,
       conflictSnapshot: null,
     }),
+  updateCurrentMetadata: (currentMetadata) => set({ currentMetadata }),
   setConflictSnapshot: (conflictSnapshot) =>
     set({
       conflictSnapshot,
