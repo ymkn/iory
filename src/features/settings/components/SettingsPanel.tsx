@@ -189,7 +189,7 @@ export function SettingsPanel({ compact = false }: { compact?: boolean }) {
 
       <div className="settings-version-block">
         <p className="status-label">version</p>
-        <p className="settings-version-value">Iory {appVersion}</p>
+        <p className="settings-version-value">Iory {appVersion} ({__BUILD_ARCH__})</p>
       </div>
     </div>
   );

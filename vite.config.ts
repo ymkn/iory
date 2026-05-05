@@ -7,8 +7,14 @@ const nodeProcess = (globalThis as unknown as { process?: { env?: Record<string,
 const repoName = nodeProcess?.env?.GITHUB_REPOSITORY?.split('/')[1];
 const base = nodeProcess?.env?.GITHUB_ACTIONS === 'true' && repoName ? `/${repoName}/` : '/';
 
+const rawArch = nodeProcess?.env?.TAURI_ENV_ARCH ?? '';
+const buildArch = rawArch === 'x86_64' ? 'x64' : rawArch === 'aarch64' ? 'arm64' : rawArch || 'unknown';
+
 export default defineConfig({
   base,
+  define: {
+    __BUILD_ARCH__: JSON.stringify(buildArch),
+  },
   plugins: [react()],
   clearScreen: false,
   server: {

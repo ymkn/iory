@@ -2,7 +2,7 @@ use std::{
   fs,
   io::Write,
   path::{Component, Path, PathBuf},
-  time::UNIX_EPOCH,
+  time::{Instant, UNIX_EPOCH},
 };
 
 use chardetng::EncodingDetector;
@@ -10,6 +10,16 @@ use encoding_rs::{Encoding, UTF_16BE, UTF_16LE, UTF_8};
 use tauri::command;
 
 use crate::models::files::{ReadTextFileResult, TextFileMetadata};
+
+const DEBUG_LOG_ENV: &str = "IORY_DEBUG_LOG";
+
+macro_rules! timing_info {
+  ($($arg:tt)*) => {
+    if timing_log_enabled() {
+      log::info!($($arg)*);
+    }
+  };
+}
 
 fn ensure_supported_text_path(path: &Path) -> Result<(), String> {
   let extension = path.extension().and_then(|value| value.to_str());
@@ -23,44 +33,89 @@ fn ensure_supported_text_path(path: &Path) -> Result<(), String> {
 
 #[command]
 pub fn read_text_file(path: String) -> Result<ReadTextFileResult, String> {
+  let total_start = Instant::now();
   let file_path = PathBuf::from(&path);
+  let file_label = file_path
+    .file_name()
+    .and_then(|value| value.to_str())
+    .unwrap_or("document");
 
+  timing_info!(target: "iory::file_timing", "read_text_file start file={}", file_label);
+
+  let exists_start = Instant::now();
   if !file_path.exists() {
     return Err("Selected file does not exist".to_string());
   }
+  timing_info!(target: "iory::file_timing", "read_text_file step exists ms={}", elapsed_ms(exists_start));
 
+  let is_file_start = Instant::now();
   if !file_path.is_file() {
     return Err("Selected path is not a file".to_string());
   }
+  timing_info!(target: "iory::file_timing", "read_text_file step is_file ms={}", elapsed_ms(is_file_start));
 
+  let supported_start = Instant::now();
   ensure_supported_text_path(&file_path)?;
+  timing_info!(target: "iory::file_timing", "read_text_file step supported_path ms={}", elapsed_ms(supported_start));
 
+  let read_start = Instant::now();
   let bytes = fs::read(&file_path).map_err(|error| error.to_string())?;
+  timing_info!(target: "iory::file_timing", "read_text_file step fs_read ms={} bytes={}", elapsed_ms(read_start), bytes.len());
 
-  Ok(decode_text_file(&bytes))
+  let decode_start = Instant::now();
+  let result = decode_text_file(&bytes);
+  timing_info!(target: "iory::file_timing", "read_text_file step decode ms={}", elapsed_ms(decode_start));
+  timing_info!(target: "iory::file_timing", "read_text_file done total_ms={}", elapsed_ms(total_start));
+
+  Ok(result)
 }
 
 #[command]
 pub fn get_text_file_metadata(path: String) -> Result<TextFileMetadata, String> {
+  let total_start = Instant::now();
   let file_path = PathBuf::from(&path);
+  let file_label = file_path
+    .file_name()
+    .and_then(|value| value.to_str())
+    .unwrap_or("document");
 
+  timing_info!(target: "iory::file_timing", "get_text_file_metadata start file={}", file_label);
+
+  let exists_start = Instant::now();
   if !file_path.exists() {
     return Err("Selected file does not exist".to_string());
   }
+  timing_info!(target: "iory::file_timing", "get_text_file_metadata step exists ms={}", elapsed_ms(exists_start));
 
+  let is_file_start = Instant::now();
   if !file_path.is_file() {
     return Err("Selected path is not a file".to_string());
   }
+  timing_info!(target: "iory::file_timing", "get_text_file_metadata step is_file ms={}", elapsed_ms(is_file_start));
 
+  let supported_start = Instant::now();
   ensure_supported_text_path(&file_path)?;
+  timing_info!(target: "iory::file_timing", "get_text_file_metadata step supported_path ms={}", elapsed_ms(supported_start));
 
+  let metadata_start = Instant::now();
   let metadata = fs::metadata(&file_path).map_err(|error| error.to_string())?;
+  timing_info!(target: "iory::file_timing", "get_text_file_metadata step fs_metadata ms={}", elapsed_ms(metadata_start));
+
+  let modified_start = Instant::now();
   let modified_at_ms = metadata
     .modified()
     .map_err(|error| error.to_string())?
     .duration_since(UNIX_EPOCH)
     .map_err(|error| error.to_string())?
     .as_millis();
+  timing_info!(target: "iory::file_timing", "get_text_file_metadata step modified_time ms={}", elapsed_ms(modified_start));
+
+  timing_info!(
+    target: "iory::file_timing",
+    "get_text_file_metadata done total_ms={} size={}",
+    elapsed_ms(total_start),
+    metadata.len()
+  );
 
   Ok(TextFileMetadata {
     modified_at_ms,
@@ -68,8 +123,21 @@ pub fn get_text_file_metadata(path: String) -> Result<TextFileMetadata, String> 
   })
 }
 
+fn elapsed_ms(start: Instant) -> u128 {
+  start.elapsed().as_millis()
+}
+
+fn timing_log_enabled() -> bool {
+  cfg!(debug_assertions) || std::env::var_os(DEBUG_LOG_ENV).is_some()
+}
+
 #[command]
-pub fn write_text_file(path: String, contents: String, encoding: Option<String>, bom: Option<String>) -> Result<(), String> {
+pub fn write_text_file(
+  path: String,
+  contents: String,
+  encoding: Option<String>,
+  bom: Option<String>,
+) -> Result<(), String> {
   let file_path = PathBuf::from(&path);
 
   if !file_path.exists() {
@@ -97,9 +165,7 @@ pub fn write_text_file(path: String, contents: String, encoding: Option<String>,
     .open(&file_path)
     .map_err(|error| error.to_string())?;
 
-  file
-    .write_all(&bytes)
-    .map_err(|error| error.to_string())?;
+  file.write_all(&bytes).map_err(|error| error.to_string())?;
   file.flush().map_err(|error| error.to_string())?;
 
   Ok(())
@@ -189,7 +255,11 @@ pub fn create_folder(root_path: String, relative_path: String) -> Result<String,
 }
 
 #[command]
-pub fn rename_workspace_entry(root_path: String, from_relative_path: String, to_relative_path: String) -> Result<String, String> {
+pub fn rename_workspace_entry(
+  root_path: String,
+  from_relative_path: String,
+  to_relative_path: String,
+) -> Result<String, String> {
   let root = PathBuf::from(&root_path);
 
   if !root.exists() {
@@ -341,7 +411,10 @@ fn encode_text(contents: &str, encoding: &'static Encoding) -> Result<Vec<u8>, S
   let (encoded, _, had_errors) = encoding.encode(contents);
 
   if had_errors {
-    return Err(format!("現在の本文は {} へ安全に保存できません。", normalize_encoding_label(encoding)));
+    return Err(format!(
+      "現在の本文は {} へ安全に保存できません。",
+      normalize_encoding_label(encoding)
+    ));
   }
 
   Ok(encoded.into_owned())
@@ -362,10 +435,11 @@ fn normalize_encoding_label(encoding: &'static Encoding) -> String {
 
 #[cfg(test)]
 mod tests {
-  use super::{create_empty_text_file, create_text_file, delete_workspace_entry, rename_workspace_entry};
+  use super::{
+    create_empty_text_file, create_text_file, delete_workspace_entry, rename_workspace_entry,
+  };
   use std::{
-    env,
-    fs,
+    env, fs,
     path::{Path, PathBuf},
     time::{SystemTime, UNIX_EPOCH},
   };
