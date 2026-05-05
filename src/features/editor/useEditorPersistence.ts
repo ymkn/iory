@@ -6,6 +6,10 @@ import { getTextFileMetadata, readTextFile, saveDocumentAtomic } from '../worksp
 
 export type SaveReason = 'manual' | 'autosave' | 'blur' | 'switch' | 'close';
 
+export function getSaveFailureMessage(reason: SaveReason) {
+  return reason === 'autosave' ? '自動保存に失敗しました。' : '保存に失敗しました。';
+}
+
 export function isMetadataOnlyExternalChange(
   diskText: string,
   lastSavedText: string | null,
@@ -150,7 +154,8 @@ export function useEditorPersistence({
         })
         .catch((error: unknown) => {
           const message = typeof error === 'string' ? error : error instanceof Error ? error.message : 'Failed to save the file.';
-          setLoadError(message);
+          console.error(`Failed to save file (${reason})`, message);
+          setLoadError(getSaveFailureMessage(reason));
           setSaveStatus('error');
           setLastEvent(`file:save:error:${reason}`);
         })

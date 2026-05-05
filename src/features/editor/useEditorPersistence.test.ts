@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isMetadataOnlyExternalChange } from './useEditorPersistence';
+import { getSaveFailureMessage, isMetadataOnlyExternalChange } from './useEditorPersistence';
 
 describe('isMetadataOnlyExternalChange', () => {
   it('returns true when disk text still matches the app saved baseline', () => {
@@ -20,5 +20,15 @@ describe('isMetadataOnlyExternalChange', () => {
 
   it('returns false when disk text matches but BOM changed', () => {
     expect(isMetadataOnlyExternalChange('draft', 'draft', 'utf-8', 'utf-8', 'utf-8', null)).toBe(false);
+  });
+});
+
+describe('getSaveFailureMessage', () => {
+  it('uses a short autosave failure message for autosave errors', () => {
+    expect(getSaveFailureMessage('autosave')).toBe('自動保存に失敗しました。');
+  });
+
+  it('uses a short save failure message for manual errors', () => {
+    expect(getSaveFailureMessage('manual')).toBe('保存に失敗しました。');
   });
 });

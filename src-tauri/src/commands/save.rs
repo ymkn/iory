@@ -18,6 +18,7 @@ use windows_sys::Win32::Storage::FileSystem::ReplaceFileW;
 const WINDOWS_RETRY_ATTEMPTS: usize = 5;
 const WINDOWS_RETRY_DELAY_MS: u64 = 40;
 const DEBUG_LOG_ENV: &str = "IORY_DEBUG_LOG";
+const ERROR_UNABLE_TO_REMOVE_REPLACED: i32 = 1175;
 
 macro_rules! timing_info {
   ($($arg:tt)*) => {
@@ -208,7 +209,7 @@ fn timing_log_enabled() -> bool {
 
 fn should_retry(error: &std::io::Error) -> bool {
   matches!(error.kind(), ErrorKind::PermissionDenied)
-    || matches!(error.raw_os_error(), Some(5) | Some(32))
+    || matches!(error.raw_os_error(), Some(5) | Some(32) | Some(ERROR_UNABLE_TO_REMOVE_REPLACED))
 }
 
 fn make_temp_path(path: &Path) -> PathBuf {
@@ -284,7 +285,7 @@ fn replace_file(from: &Path, to: &Path) -> std::io::Result<()> {
 
 #[cfg(test)]
 mod tests {
-  use super::{replace_with_retry_impl, save_document_atomic_blocking};
+  use super::{replace_with_retry_impl, save_document_atomic_blocking, ERROR_UNABLE_TO_REMOVE_REPLACED};
   use std::{
     cell::RefCell,
     env, fs,
@@ -375,6 +376,38 @@ mod tests {
       &*sleeps_for_assert.borrow(),
       &[Duration::from_millis(40), Duration::from_millis(80)]
     );
+    assert_eq!(fs::read_to_string(&to).expect("read target"), "next");
+  }
+
+  #[test]
+  fn replace_with_retry_retries_unable_to_remove_replaced_then_succeeds() {
+    let dir = TestDir::new("retry-replace-file");
+    let from = dir.path().join("from.txt");
+    let to = dir.path().join("to.txt");
+    fs::write(&from, "next").expect("write source");
+    fs::write(&to, "prev").expect("write target");
+
+    let attempts = Rc::new(RefCell::new(0usize));
+    let attempts_for_replacer = Rc::clone(&attempts);
+
+    let result = replace_with_retry_impl(
+      &from,
+      &to,
+      move |from, to| {
+        let mut count = attempts_for_replacer.borrow_mut();
+        *count += 1;
+
+        if *count < 2 {
+          return Err(Error::from_raw_os_error(ERROR_UNABLE_TO_REMOVE_REPLACED));
+        }
+
+        fs::rename(from, to)
+      },
+      |_| {},
+    );
+
+    assert!(result.is_ok());
+    assert_eq!(*attempts.borrow(), 2);
     assert_eq!(fs::read_to_string(&to).expect("read target"), "next");
   }
 }
