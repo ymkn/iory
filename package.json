@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "tauri": "tauri",
-    "build:tauri:x64": "tauri build --target x86_64-pc-windows-msvc"
+    "build:tauri:x64": "tauri build --target x86_64-pc-windows-msvc",
+    "build:tauri:arm64": "tauri build --target aarch64-pc-windows-msvc"
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.3",
