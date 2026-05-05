@@ -95,7 +95,7 @@ function buildTheme(fontSize: number, lineHeight: number, cursorStyle: 'line' | 
       fontFamily: 'var(--editor-font-family), var(--editor-cjk-monospace-fallback)',
       fontFeatureSettings: '"palt" 0, "pkna" 0, "halt" 0, "vhal" 0, "kern" 0, "liga" 0, "calt" 0',
       fontKerning: 'none',
-      fontVariantEastAsian: 'full-width',
+      fontVariantEastAsian: 'normal',
       fontVariantLigatures: 'none',
       letterSpacing: 'normal',
       lineHeight: String(lineHeight),

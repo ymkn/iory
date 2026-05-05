@@ -776,7 +776,7 @@ select {
   font-family: var(--editor-font-family), var(--editor-cjk-monospace-fallback);
   font-feature-settings: "palt" 0, "pkna" 0, "halt" 0, "vhal" 0, "kern" 0, "liga" 0, "calt" 0;
   font-kerning: none;
-  font-variant-east-asian: full-width;
+  font-variant-east-asian: normal;
   font-variant-ligatures: none;
   font-size: clamp(1.15rem, 2vw, 1.4rem);
   line-height: var(--editor-line-height);
@@ -1310,7 +1310,7 @@ select {
   font-family: var(--editor-font-family), var(--editor-cjk-monospace-fallback);
   font-feature-settings: "palt" 0, "pkna" 0, "halt" 0, "vhal" 0, "kern" 0, "liga" 0, "calt" 0;
   font-kerning: none;
-  font-variant-east-asian: full-width;
+  font-variant-east-asian: normal;
   font-variant-ligatures: none;
   letter-spacing: normal;
   text-autospace: no-autospace;
