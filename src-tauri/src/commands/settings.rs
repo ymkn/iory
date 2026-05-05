@@ -5,6 +5,7 @@ use tauri::{AppHandle, Manager};
 use crate::models::settings::AppSettings;
 
 const SETTINGS_FILE_NAME: &str = "settings.json";
+const MIN_AUTOSAVE_INTERVAL_MS: u32 = 10000;
 
 #[tauri::command]
 pub fn load_settings(app: AppHandle) -> Result<AppSettings, String> {
@@ -57,6 +58,8 @@ fn normalize_settings(mut settings: AppSettings) -> AppSettings {
   if settings.cursor_style != "block" {
     settings.cursor_style = "line".to_string();
   }
+
+  settings.autosave_interval_ms = settings.autosave_interval_ms.max(MIN_AUTOSAVE_INTERVAL_MS);
 
   settings
 }

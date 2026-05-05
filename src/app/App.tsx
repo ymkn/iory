@@ -61,7 +61,7 @@ export function App() {
     reset,
   } = useEditorStore();
   const { isFocusMode, overlayPanel, overlaySource, toggleFocusMode, openOverlayPanel, openOverlayPanelFromHover, closeOverlayPanel, closeHoverOverlayPanel, toggleOverlayPanel } = useFocusStore();
-  const { isHydrated, themeId, backgroundMode, showBackgroundImage, uiFontFamily, editorFontFamily, countMode, cursorStyle, fontSize, lineHeight, editorMaxWidth, checkpointIntervalMs, hydrate } = useSettingsStore();
+  const { isHydrated, themeId, backgroundMode, showBackgroundImage, uiFontFamily, editorFontFamily, countMode, cursorStyle, fontSize, lineHeight, editorMaxWidth, autosaveIntervalMs, checkpointIntervalMs, hydrate } = useSettingsStore();
 
   const stats = useMemo(() => calculateDocumentStats(text), [text]);
   const isDirty = Boolean(currentFilePath) && saveStatus === 'dirty';
@@ -92,6 +92,7 @@ export function App() {
     lastSavedText,
     saveStatus,
     isDirty,
+    autosaveIntervalMs,
     shouldDeferBlurSave: () => isNativeFileDialogOpenRef.current,
     shouldPauseExternalSync: () => isNativeFileDialogOpenRef.current || isFileTransitioningRef.current,
     openDocument,

@@ -16,6 +16,7 @@ type SettingsState = SettingsValues & {
   setLineHeight: (lineHeight: number) => Promise<void>;
   setEditorMaxWidth: (editorMaxWidth: number) => Promise<void>;
   setShowStats: (showStats: boolean) => Promise<void>;
+  setAutosaveIntervalMs: (autosaveIntervalMs: number) => Promise<void>;
   setCheckpointIntervalMs: (checkpointIntervalMs: number) => Promise<void>;
 };
 
@@ -98,6 +99,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
           lineHeight: settings.lineHeight,
           editorMaxWidth: settings.editorMaxWidth,
           showStats: settings.showStats,
+          autosaveIntervalMs: settings.autosaveIntervalMs,
           checkpointIntervalMs: settings.checkpointIntervalMs,
           isHydrated: true,
         });
@@ -138,6 +140,9 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     },
     setShowStats: async (showStats) => {
       await persist({ showStats });
+    },
+    setAutosaveIntervalMs: async (autosaveIntervalMs) => {
+      await persist({ autosaveIntervalMs });
     },
     setCheckpointIntervalMs: async (checkpointIntervalMs) => {
       await persist({ checkpointIntervalMs });

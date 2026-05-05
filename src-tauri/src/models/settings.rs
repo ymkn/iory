@@ -37,7 +37,7 @@ impl Default for AppSettings {
       editor_width: 820,
       show_stats: true,
       default_new_file_extension: "md".to_string(),
-      autosave_interval_ms: 1000,
+      autosave_interval_ms: 10000,
       checkpoint_interval_ms: 300000,
     }
   }

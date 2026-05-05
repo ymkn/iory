@@ -29,6 +29,7 @@ type UseEditorPersistenceParams = {
   lastSavedText: string | null;
   saveStatus: SaveStatus;
   isDirty: boolean;
+  autosaveIntervalMs?: number;
   shouldDeferBlurSave?: () => boolean;
   shouldPauseExternalSync?: () => boolean;
   openDocument: (params: { path: string; name: string; text: string; encoding: string; bom: string | null; metadata: FileMetadataSnapshot }) => void;
@@ -52,6 +53,7 @@ export function useEditorPersistence({
   lastSavedText,
   saveStatus,
   isDirty,
+  autosaveIntervalMs,
   shouldDeferBlurSave,
   shouldPauseExternalSync,
   openDocument,
@@ -265,12 +267,12 @@ export function useEditorPersistence({
       if (!savePromiseRef.current) {
         void handleSaveFile('autosave');
       }
-    });
+    }, autosaveIntervalMs);
 
     return () => {
       cancelAutosave(timer);
     };
-  }, [currentFilePath, handleSaveFile, isDirty, isComposing]);
+  }, [autosaveIntervalMs, currentFilePath, handleSaveFile, isDirty, isComposing]);
 
   useEffect(() => {
     if (!platform.supportsExternalWatch) {

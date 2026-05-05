@@ -15,6 +15,7 @@ export type SettingsValues = {
   lineHeight: number;
   editorMaxWidth: number;
   showStats: boolean;
+  autosaveIntervalMs: number;
   checkpointIntervalMs: number;
 };
 
@@ -36,6 +37,7 @@ export const DEFAULT_SETTINGS: SettingsValues = {
   lineHeight: 2,
   editorMaxWidth: 820,
   showStats: true,
+  autosaveIntervalMs: 10000,
   checkpointIntervalMs: 600000,
 };
 

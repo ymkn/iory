@@ -16,8 +16,15 @@ type SettingsWire = {
   lineHeight: number;
   editorWidth: number;
   showStats: boolean;
+  autosaveIntervalMs?: number;
   checkpointIntervalMs?: number;
 };
+
+const MIN_AUTOSAVE_INTERVAL_MS = 10000;
+
+function normalizeAutosaveIntervalMs(value: number | undefined) {
+  return Math.max(MIN_AUTOSAVE_INTERVAL_MS, value ?? MIN_AUTOSAVE_INTERVAL_MS);
+}
 
 function normalizeThemeId(themeId: string): PersistedSettings['themeId'] {
   switch (themeId) {
@@ -55,6 +62,7 @@ function fromWire(settings: SettingsWire): PersistedSettings {
     lineHeight: settings.lineHeight,
     editorMaxWidth: settings.editorWidth,
     showStats: settings.showStats,
+    autosaveIntervalMs: normalizeAutosaveIntervalMs(settings.autosaveIntervalMs),
     checkpointIntervalMs: settings.checkpointIntervalMs ?? 600000,
   };
 }
@@ -73,6 +81,7 @@ function toWire(settings: SettingsValues): SettingsWire {
     lineHeight: settings.lineHeight,
     editorWidth: settings.editorMaxWidth,
     showStats: settings.showStats,
+    autosaveIntervalMs: settings.autosaveIntervalMs,
     checkpointIntervalMs: settings.checkpointIntervalMs,
   };
 }

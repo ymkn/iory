@@ -52,6 +52,7 @@ export function SettingsPanel({ compact = false }: { compact?: boolean }) {
     fontSize,
     lineHeight,
     editorMaxWidth,
+    autosaveIntervalMs,
     checkpointIntervalMs,
     setBackgroundMode,
     setShowBackgroundImage,
@@ -62,6 +63,7 @@ export function SettingsPanel({ compact = false }: { compact?: boolean }) {
     setFontSize,
     setLineHeight,
     setEditorMaxWidth,
+    setAutosaveIntervalMs,
     setCheckpointIntervalMs,
   } = useSettingsStore();
 
@@ -172,6 +174,16 @@ export function SettingsPanel({ compact = false }: { compact?: boolean }) {
               void setEditorMaxWidth(Number(event.target.value));
             }} step={10} type="range" value={editorMaxWidth} />
             <strong>{editorMaxWidth}px</strong>
+          </span>
+        </label>
+
+        <label className="settings-field settings-field-modal-row">
+          <span className="settings-field-label">Autosave interval</span>
+          <span className="settings-field-control settings-field-control-range">
+            <input max={60000} min={10000} onChange={(event) => {
+              void setAutosaveIntervalMs(Number(event.target.value));
+            }} step={5000} type="range" value={autosaveIntervalMs} />
+            <strong>{Math.round(autosaveIntervalMs / 1000)}s</strong>
           </span>
         </label>
 

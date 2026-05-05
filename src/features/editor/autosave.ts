@@ -1,4 +1,4 @@
-export const DEFAULT_AUTOSAVE_DELAY_MS = 1000;
+export const DEFAULT_AUTOSAVE_DELAY_MS = 10000;
 
 export type AutosaveGuardParams = {
   currentFilePath: string | null;
