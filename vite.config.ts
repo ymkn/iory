@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react';
 // Access process.env through globalThis to avoid TS2591.
 const nodeProcess = (globalThis as unknown as { process?: { env?: Record<string, string | undefined> } }).process;
 const repoName = nodeProcess?.env?.GITHUB_REPOSITORY?.split('/')[1];
-const base = nodeProcess?.env?.GITHUB_ACTIONS === 'true' && repoName ? `/${repoName}/` : '/';
+const base = nodeProcess?.env?.IORY_WEB_DEMO_BUILD === 'true' && repoName ? `/${repoName}/` : '/';
 
 const rawArch = nodeProcess?.env?.TAURI_ENV_ARCH ?? '';
 const buildArch = rawArch === 'x86_64' ? 'x64' : rawArch === 'aarch64' ? 'arm64' : rawArch || 'unknown';

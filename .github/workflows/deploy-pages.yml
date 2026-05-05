@@ -35,6 +35,8 @@ jobs:
         run: npm ci
 
       - name: Build web demo
+        env:
+          IORY_WEB_DEMO_BUILD: true
         run: npm run build
 
       - name: Configure GitHub Pages
