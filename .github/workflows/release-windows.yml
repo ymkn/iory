@@ -59,8 +59,9 @@ jobs:
         run: |
           $tagName = "v${{ steps.version.outputs.version }}"
           gh release view $tagName --repo "${{ github.repository }}" *> $null
+          $releaseViewExitCode = $LASTEXITCODE
 
-          if ($LASTEXITCODE -eq 0) {
+          if ($releaseViewExitCode -eq 0) {
             "exists=true" >> $env:GITHUB_OUTPUT
             Write-Host "Release $tagName already exists. Skipping release."
             exit 0
@@ -68,6 +69,7 @@ jobs:
 
           "exists=false" >> $env:GITHUB_OUTPUT
           Write-Host "Release $tagName does not exist yet."
+          exit 0
 
       - name: Setup Node
         if: steps.version.outputs.changed == 'true' && steps.existing_release.outputs.exists == 'false'
