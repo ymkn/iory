@@ -13,6 +13,21 @@ type LeftPaneProps = {
   onCloseCurrentFile: () => void;
 };
 
+function toFolderPath(path: string) {
+  const normalizedPath = path.replace(/[/\\]+$/, '');
+  const lastSlashIndex = Math.max(normalizedPath.lastIndexOf('/'), normalizedPath.lastIndexOf('\\'));
+
+  if (lastSlashIndex < 0) {
+    return '';
+  }
+
+  if (lastSlashIndex === 2 && normalizedPath[1] === ':') {
+    return normalizedPath.slice(0, 3);
+  }
+
+  return normalizedPath.slice(0, lastSlashIndex);
+}
+
 export function LeftPane({
   recentFiles,
   currentFilePath,
@@ -23,6 +38,8 @@ export function LeftPane({
   onForgetRecentFile,
   onCloseCurrentFile,
 }: LeftPaneProps) {
+  const currentFolderPath = currentFilePath ? toFolderPath(currentFilePath) : '';
+
   return (
     <div className="side-pane-stack">
       {currentFilePath ? (
@@ -42,6 +59,7 @@ export function LeftPane({
               <X aria-hidden="true" className="toolbar-icon" size={16} />
             </button>
           </div>
+          {currentFolderPath ? <p className="history-current-folder" title={currentFolderPath}>{currentFolderPath}</p> : null}
         </div>
       ) : null}
 
