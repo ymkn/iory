@@ -87,6 +87,14 @@
 - ARM64 環境での再現確認は、x64 エミュレーションか ARM64 ネイティブかを必ず分けて見る。
 - リリース前にローカルでリリースビルドを作る場合は、対象アーキテクチャを明示する。GitHub Actions のリリース生成条件とも整合させる。
 
+### リリースワークフロー
+- リリースするかどうか、またバージョンを上げるかどうかが明示されていない場合は、作業前または push 前にユーザへ確認する。
+- バージョンを上げる場合は `package.json`、`package-lock.json`、`src-tauri/Cargo.toml`、`src-tauri/Cargo.lock`、`src-tauri/tauri.conf.json` を同じ version に揃える。
+- バージョン更新を含む変更を commit してから push する。バージョン更新なしの push では GitHub Release を作らない。
+- Windows installer のビルドと GitHub Release 作成は GitHub Actions の責務とする。ローカルでリリースビルドを作るのは確認目的に留め、成果物を手動で release に添付しない。
+- `src-tauri/tauri.conf.json` の version が main への push で変わったとき、Actions が `v<version>` の release を作り、x64 と ARM64 の Windows installer を添付する。
+- Actions 側で同じ release を複数 job / step から新規作成しない。最初に作成した release ID に後続アーキテクチャの成果物をアップロードする。
+
 ## 今後も維持したい方向性
 - 「静かで、少ない UI で、しかし本文保護だけは強い」こと。
 - データ所有権はユーザー側、安心感はアプリ側、という役割分担を崩さないこと。
@@ -94,4 +102,4 @@
 
 ## Push時のルール
 
-Push前にバージョンを上げるかどうかユーザに聞くこと。バージョンを上げる場合はリリースビルドを作成すること。
+Push前にバージョンを上げるかどうかユーザに聞くこと。バージョンを上げる場合は、バージョン更新を commit してから push し、リリースビルドと GitHub Release 作成は Actions に任せること。
