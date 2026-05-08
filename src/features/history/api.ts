@@ -1,16 +1,14 @@
 import { platform } from '../../platform';
-import type { AppendFileHistoryEntryInput, FileHistoryDocument, FileHistoryEntry } from './types';
-
-const { invoke } = platform;
+import type { AppendFileHistoryEntryInput } from './types';
 
 export async function loadFileHistory(path: string) {
-  return invoke<FileHistoryDocument>('load_file_history', { path });
+  return platform.history.loadFileHistory(path);
 }
 
 export async function appendFileHistoryEntry(entry: AppendFileHistoryEntryInput) {
-  return invoke<FileHistoryEntry>('append_file_history_entry', { entry });
+  return platform.history.appendFileHistoryEntry(entry);
 }
 
 export async function truncateFileHistoryAfter(path: string, entryId: string) {
-  return invoke<FileHistoryDocument>('truncate_file_history_after', { path, entryId });
+  return platform.history.truncateFileHistoryAfter(path, entryId);
 }

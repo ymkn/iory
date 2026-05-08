@@ -15,8 +15,6 @@ pub struct AppSettings {
   pub font_size: u32,
   pub line_height: f32,
   pub editor_width: u32,
-  pub show_stats: bool,
-  pub default_new_file_extension: String,
   pub autosave_interval_ms: u32,
   pub checkpoint_interval_ms: u32,
 }
@@ -35,8 +33,6 @@ impl Default for AppSettings {
       font_size: 22,
       line_height: 2.0,
       editor_width: 820,
-      show_stats: true,
-      default_new_file_extension: "md".to_string(),
       autosave_interval_ms: 10000,
       checkpoint_interval_ms: 300000,
     }

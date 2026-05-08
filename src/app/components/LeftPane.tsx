@@ -52,7 +52,7 @@ export function LeftPane({
             </div>
           </div>
           <div className="history-current-row">
-            <button className="workspace-tree-button is-active" type="button">
+            <button className="document-list-button is-active" type="button">
               {currentFileName}
             </button>
             <button aria-label="close current file" className="toolbar-icon-button history-inline-action" onClick={onCloseCurrentFile} title="Close file" type="button">
@@ -69,7 +69,7 @@ export function LeftPane({
           <div className="history-list">
             {recentFiles.map((file) => (
               <div className="history-recent-row" key={file.path}>
-                <button className={`workspace-tree-button${currentFilePath === file.path ? ' is-active' : ''}`} onClick={() => {
+                <button className={`document-list-button${currentFilePath === file.path ? ' is-active' : ''}`} onClick={() => {
                   onOpenRecentFile(file.path);
                 }} type="button">
                   {file.name}

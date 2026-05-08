@@ -10,6 +10,16 @@
  * will produce targeted type errors rather than silent semantics changes.
  */
 
+import type {
+  ReadTextFileResult,
+  TextFileMetadata,
+} from '../features/files/types';
+import type {
+  AppendFileHistoryEntryInput,
+  FileHistoryDocument,
+  FileHistoryEntry,
+} from '../features/history/types';
+
 export type PlatformPath = string;
 
 export type DialogFilter = {
@@ -40,15 +50,66 @@ export type AppWindowHandle = {
   onResized: (handler: () => void) => Promise<() => void>;
 };
 
+export type SettingsWire = {
+  version: number;
+  themeId: string;
+  backgroundMode: string;
+  showBackgroundImage?: boolean;
+  uiFontFamily: string;
+  editorFontFamily: string;
+  countMode: string;
+  cursorStyle?: string;
+  fontSize: number;
+  lineHeight: number;
+  editorWidth: number;
+  autosaveIntervalMs?: number;
+  checkpointIntervalMs?: number;
+};
+
+export type FilePlatform = {
+  readTextFile: (path: PlatformPath) => Promise<ReadTextFileResult>;
+  getTextFileMetadata: (path: PlatformPath) => Promise<TextFileMetadata>;
+  createEmptyTextFile: (path: PlatformPath) => Promise<void>;
+  saveDocumentAtomic: (
+    path: PlatformPath,
+    contents: string,
+    encoding?: string,
+    bom?: string | null,
+  ) => Promise<void>;
+};
+
+export type HistoryPlatform = {
+  loadFileHistory: (path: PlatformPath) => Promise<FileHistoryDocument>;
+  appendFileHistoryEntry: (
+    entry: AppendFileHistoryEntryInput,
+  ) => Promise<FileHistoryEntry>;
+  truncateFileHistoryAfter: (
+    path: PlatformPath,
+    entryId: string,
+  ) => Promise<FileHistoryDocument>;
+};
+
+export type SettingsPlatform = {
+  loadSettings: () => Promise<SettingsWire>;
+  saveSettings: (settings: SettingsWire) => Promise<SettingsWire>;
+};
+
 export type Platform = {
   kind: 'tauri' | 'web';
   supportsNativeWindowControls: boolean;
-  supportsExternalWatch: boolean;
+  supportsExternalFileSync: boolean;
   supportsDownloadExport: boolean;
-  invoke: <T>(command: string, args?: Record<string, unknown>) => Promise<T>;
+  files: FilePlatform;
+  history: HistoryPlatform;
+  settings: SettingsPlatform;
   openDialog: (options?: OpenFileDialogOptions) => Promise<PlatformPath | null>;
   saveDialog: (options?: SaveFileDialogOptions) => Promise<PlatformPath | null>;
   getAppWindow: () => AppWindowHandle | null;
   getAppLogoSrc: () => string;
-  downloadDocument: (path: PlatformPath, name: string, text: string, bom?: string | null) => Promise<void>;
+  downloadDocument: (
+    path: PlatformPath,
+    name: string,
+    text: string,
+    bom?: string | null,
+  ) => Promise<void>;
 };

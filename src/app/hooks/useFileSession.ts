@@ -5,7 +5,7 @@ const { openDialog, saveDialog } = platform;
 import type { WritingEditorSnapshot } from '../../features/editor/components/WritingEditor';
 import type { FileMetadataSnapshot, SaveStatus } from '../../features/editor/store';
 import { loadLastOpenedFile, loadRecentFiles, rememberRecentFile, removeRecentFile, saveLastOpenedFile, toFileName, type RecentFileSummary } from '../../features/history/persistence';
-import { createEmptyTextFile, getTextFileMetadata, readTextFile } from '../../features/workspace/api';
+import { createEmptyTextFile, getTextFileMetadata, readTextFile } from '../../features/files/api';
 
 type UseFileSessionArgs = {
   currentFilePath: string | null;

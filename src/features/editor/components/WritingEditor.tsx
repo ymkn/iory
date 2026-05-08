@@ -109,7 +109,7 @@ function buildTheme(fontSize: number, lineHeight: number, cursorStyle: 'line' | 
       paddingRight: '0',
       paddingBottom: '0',
       paddingLeft: '0',
-      caretColor: 'var(--text-primary)',
+      caretColor: 'var(--caret-color)',
     },
     '.cm-line': {
       padding: '0',
@@ -123,18 +123,18 @@ function buildTheme(fontSize: number, lineHeight: number, cursorStyle: 'line' | 
     '.cm-activeLineGutter': {
       backgroundColor: 'transparent',
     },
-    '.cm-selectionBackground, &.cm-focused .cm-selectionBackground, ::selection': {
-      backgroundColor: 'var(--selection-background)',
-    },
     '&.cm-focused': {
       outline: 'none',
+    },
+    '&.cm-focused .cm-cursor': {
+      borderLeftColor: 'var(--caret-color)',
     },
     ...(cursorStyle === 'block'
       ? {
           '&.cm-focused .cm-cursor': {
             borderLeft: 'none',
             borderRadius: '1px',
-            backgroundColor: 'color-mix(in srgb, var(--text-primary) 82%, transparent)',
+            backgroundColor: 'var(--caret-color)',
             width: blockCursorWidth,
           },
           '&.cm-focused .cm-cursor-primary': {

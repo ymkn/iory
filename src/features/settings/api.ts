@@ -1,24 +1,10 @@
 import { platform } from '../../platform';
-import { SETTINGS_VERSION, type PersistedSettings, type SettingsValues } from './types';
-
-const { invoke } = platform;
-
-type SettingsWire = {
-  version: number;
-  themeId: string;
-  backgroundMode: string;
-  showBackgroundImage?: boolean;
-  uiFontFamily: string;
-  editorFontFamily: string;
-  countMode: string;
-  cursorStyle?: string;
-  fontSize: number;
-  lineHeight: number;
-  editorWidth: number;
-  showStats: boolean;
-  autosaveIntervalMs?: number;
-  checkpointIntervalMs?: number;
-};
+import type { SettingsWire } from '../../platform/types';
+import {
+  SETTINGS_VERSION,
+  type PersistedSettings,
+  type SettingsValues,
+} from './types';
 
 const MIN_AUTOSAVE_INTERVAL_MS = 10000;
 
@@ -38,7 +24,9 @@ function normalizeThemeId(themeId: string): PersistedSettings['themeId'] {
   }
 }
 
-function normalizeCursorStyle(cursorStyle: string | undefined): PersistedSettings['cursorStyle'] {
+function normalizeCursorStyle(
+  cursorStyle: string | undefined,
+): PersistedSettings['cursorStyle'] {
   switch (cursorStyle) {
     case 'block':
     case 'line':
@@ -52,7 +40,8 @@ function fromWire(settings: SettingsWire): PersistedSettings {
   return {
     version: settings.version,
     themeId: normalizeThemeId(settings.themeId),
-    backgroundMode: settings.backgroundMode as PersistedSettings['backgroundMode'],
+    backgroundMode:
+      settings.backgroundMode as PersistedSettings['backgroundMode'],
     showBackgroundImage: settings.showBackgroundImage ?? true,
     uiFontFamily: settings.uiFontFamily,
     editorFontFamily: settings.editorFontFamily,
@@ -61,8 +50,9 @@ function fromWire(settings: SettingsWire): PersistedSettings {
     fontSize: settings.fontSize,
     lineHeight: settings.lineHeight,
     editorMaxWidth: settings.editorWidth,
-    showStats: settings.showStats,
-    autosaveIntervalMs: normalizeAutosaveIntervalMs(settings.autosaveIntervalMs),
+    autosaveIntervalMs: normalizeAutosaveIntervalMs(
+      settings.autosaveIntervalMs,
+    ),
     checkpointIntervalMs: settings.checkpointIntervalMs ?? 600000,
   };
 }
@@ -80,18 +70,17 @@ function toWire(settings: SettingsValues): SettingsWire {
     fontSize: settings.fontSize,
     lineHeight: settings.lineHeight,
     editorWidth: settings.editorMaxWidth,
-    showStats: settings.showStats,
     autosaveIntervalMs: settings.autosaveIntervalMs,
     checkpointIntervalMs: settings.checkpointIntervalMs,
   };
 }
 
 export async function loadSettings() {
-  const settings = await invoke<SettingsWire>('load_settings');
+  const settings = await platform.settings.loadSettings();
   return fromWire(settings);
 }
 
 export async function saveSettings(settings: SettingsValues) {
-  const saved = await invoke<SettingsWire>('save_settings', { settings: toWire(settings) });
+  const saved = await platform.settings.saveSettings(toWire(settings));
   return fromWire(saved);
 }

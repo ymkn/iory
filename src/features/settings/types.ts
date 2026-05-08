@@ -14,7 +14,6 @@ export type SettingsValues = {
   fontSize: number;
   lineHeight: number;
   editorMaxWidth: number;
-  showStats: boolean;
   autosaveIntervalMs: number;
   checkpointIntervalMs: number;
 };
@@ -36,14 +35,25 @@ export const DEFAULT_SETTINGS: SettingsValues = {
   fontSize: 14,
   lineHeight: 2,
   editorMaxWidth: 820,
-  showStats: true,
   autosaveIntervalMs: 10000,
   checkpointIntervalMs: 600000,
 };
 
-export const THEME_OPTIONS: Array<{ id: ThemeId; label: string; swatch: [string, string, string] }> = [
-  { id: 'night-blue', label: 'Night Blue', swatch: ['#101418', '#9ec3d9', '#d8e1ea'] },
+export const THEME_OPTIONS: Array<{
+  id: ThemeId;
+  label: string;
+  swatch: [string, string, string];
+}> = [
+  {
+    id: 'night-blue',
+    label: 'Night Blue',
+    swatch: ['#101418', '#9ec3d9', '#d8e1ea'],
+  },
   { id: 'snow', label: 'Snow', swatch: ['#f4f7fb', '#79a1cc', '#1b2733'] },
   { id: 'ash', label: 'Ash', swatch: ['#1a1d20', '#99b1c7', '#eceff1'] },
-  { id: 'warm-paper', label: 'Warm Paper', swatch: ['#ede6db', '#b6946c', '#5d4a3b'] },
+  {
+    id: 'warm-paper',
+    label: 'Warm Paper',
+    swatch: ['#ede6db', '#b6946c', '#5d4a3b'],
+  },
 ];

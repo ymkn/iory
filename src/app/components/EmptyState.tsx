@@ -35,14 +35,14 @@ export function EmptyState({ recentFiles, appLogoSrc, onNewFile, onOpenFile, onO
       </div>
 
       {recentFiles.length > 0 ? (
-        <div className="recent-workspaces">
+        <div className="recent-files">
           <p className="status-label">Recent files</p>
-          <div className="recent-workspace-list">
+          <div className="recent-file-list">
             {recentFiles.map((file) => (
-              <button className="recent-workspace-button" key={file.path} onClick={() => {
+              <button className="recent-file-button" key={file.path} onClick={() => {
                 onOpenRecentFile(file.path);
               }} type="button">
-                <span className="recent-workspace-name">{file.name}</span>
+                <span className="recent-file-name">{file.name}</span>
                 <span>{toRecentFileLocationLabel(file.path)}</span>
               </button>
             ))}

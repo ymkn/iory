@@ -4,7 +4,7 @@ import { useEditorStore, type ConflictSnapshot, type FileMetadataSnapshot, type 
 import { appendFileHistoryEntry, loadFileHistory, truncateFileHistoryAfter } from '../../features/history/api';
 import { DEFAULT_CHECKPOINT_INTERVAL_MS, shouldAppendCheckpoint } from '../../features/history/checkpoints';
 import type { FileHistoryEntry } from '../../features/history/types';
-import { getTextFileMetadata, saveDocumentAtomic } from '../../features/workspace/api';
+import { getTextFileMetadata, saveDocumentAtomic } from '../../features/files/api';
 import { toFileName } from '../../features/history/persistence';
 
 type UseHistoryControllerArgs = {

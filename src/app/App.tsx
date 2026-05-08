@@ -16,7 +16,7 @@ import { LeftPane } from './components/LeftPane';
 import { RestoreConfirmModal } from './components/RestoreConfirmModal';
 import { SettingsOverlay } from './components/SettingsOverlay';
 import { Titlebar } from './components/Titlebar';
-import { WritingWorkspace } from './components/WritingWorkspace';
+import { WritingLayout } from './components/WritingLayout';
 import { useAppEnvironment } from './hooks/useAppEnvironment';
 import { useAppHotkeys } from './hooks/useAppHotkeys';
 import { useEditorViewportBehavior } from './hooks/useEditorViewportBehavior';
@@ -290,7 +290,7 @@ export function App() {
     }
 
     return (
-      <WritingWorkspace
+      <WritingLayout
         editor={(
           <>
             <Suspense fallback={<div aria-label="loading editor" className="writing-editor-fallback"><span className="loading-spinner" /></div>}>
@@ -381,7 +381,7 @@ export function App() {
           openOverlayPanel('stats');
         }}
         onRightPaneHoverEnter={handleStatsPaneHoverEnter}
-        onWorkspaceMouseLeave={() => {
+        onLayoutMouseLeave={() => {
           if (isHoverOverlayOpen) {
             closeHoverOverlayPanel();
             editorRef.current?.focus();

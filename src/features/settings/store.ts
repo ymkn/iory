@@ -1,6 +1,15 @@
 import { create } from 'zustand';
 import { loadSettings, saveSettings } from './api';
-import { DEFAULT_SETTINGS, SETTINGS_VERSION, type BackgroundMode, type CountMode, type CursorStyle, type PersistedSettings, type SettingsValues, type ThemeId } from './types';
+import {
+  DEFAULT_SETTINGS,
+  SETTINGS_VERSION,
+  type BackgroundMode,
+  type CountMode,
+  type CursorStyle,
+  type PersistedSettings,
+  type SettingsValues,
+  type ThemeId,
+} from './types';
 
 type SettingsState = SettingsValues & {
   isHydrated: boolean;
@@ -15,7 +24,6 @@ type SettingsState = SettingsValues & {
   setFontSize: (fontSize: number) => Promise<void>;
   setLineHeight: (lineHeight: number) => Promise<void>;
   setEditorMaxWidth: (editorMaxWidth: number) => Promise<void>;
-  setShowStats: (showStats: boolean) => Promise<void>;
   setAutosaveIntervalMs: (autosaveIntervalMs: number) => Promise<void>;
   setCheckpointIntervalMs: (checkpointIntervalMs: number) => Promise<void>;
 };
@@ -31,7 +39,10 @@ async function persistSnapshot(values: SettingsValues) {
   await saveSettings(toPersistedSettings(values));
 }
 
-function withPersistence(set: (partial: Partial<SettingsState>) => void, get: () => SettingsState) {
+function withPersistence(
+  set: (partial: Partial<SettingsState>) => void,
+  get: () => SettingsState,
+) {
   let persistTimer: ReturnType<typeof setTimeout> | null = null;
   let queuedValues: SettingsValues | null = null;
   let activePersist: Promise<void> | null = null;
@@ -72,10 +83,7 @@ function withPersistence(set: (partial: Partial<SettingsState>) => void, get: ()
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => {
-  const persist = withPersistence(
-    (partial) => set(partial),
-    get,
-  );
+  const persist = withPersistence((partial) => set(partial), get);
 
   return {
     ...DEFAULT_SETTINGS,
@@ -98,7 +106,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
           fontSize: settings.fontSize,
           lineHeight: settings.lineHeight,
           editorMaxWidth: settings.editorMaxWidth,
-          showStats: settings.showStats,
           autosaveIntervalMs: settings.autosaveIntervalMs,
           checkpointIntervalMs: settings.checkpointIntervalMs,
           isHydrated: true,
@@ -137,9 +144,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     },
     setEditorMaxWidth: async (editorMaxWidth) => {
       await persist({ editorMaxWidth });
-    },
-    setShowStats: async (showStats) => {
-      await persist({ showStats });
     },
     setAutosaveIntervalMs: async (autosaveIntervalMs) => {
       await persist({ autosaveIntervalMs });

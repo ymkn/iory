@@ -21,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Detect version bump
         id: version
@@ -96,6 +96,36 @@ jobs:
         with:
           workspaces: ./src-tauri -> target
 
+      - name: Build release notes
+        id: release_notes
+        if: steps.version.outputs.changed == 'true' && steps.existing_release.outputs.exists == 'false'
+        shell: pwsh
+        run: |
+          $tagName = "v${{ steps.version.outputs.version }}"
+          $previousTag = git tag --merged HEAD --list "v*" --sort=-creatordate | Where-Object { $_ -ne $tagName } | Select-Object -First 1
+
+          if ($previousTag) {
+            $commitLines = git log "$previousTag..HEAD" --pretty=format:"- %h %s"
+          } else {
+            $commitLines = git log HEAD --pretty=format:"- %h %s"
+          }
+
+          if (-not $commitLines) {
+            $commitLines = "- No commit messages found."
+          }
+
+          $bodyLines = @(
+            "Windows installer for IORY $tagName.",
+            "",
+            "## Changes"
+          ) + @($commitLines)
+          $body = $bodyLines -join "`n"
+
+          $delimiter = "RELEASE_NOTES_$([Guid]::NewGuid().ToString('N'))"
+          "body<<$delimiter" >> $env:GITHUB_OUTPUT
+          $body >> $env:GITHUB_OUTPUT
+          $delimiter >> $env:GITHUB_OUTPUT
+
       - name: Build x64 installer and create release
         id: build_x64
         if: steps.version.outputs.changed == 'true' && steps.existing_release.outputs.exists == 'false'
@@ -105,7 +135,7 @@ jobs:
         with:
           tagName: v__VERSION__
           releaseName: IORY v__VERSION__
-          releaseBody: Windows installer for IORY v__VERSION__.
+          releaseBody: ${{ steps.release_notes.outputs.body }}
           releaseDraft: false
           prerelease: false
           uploadUpdaterJson: false

@@ -50,11 +50,6 @@ fn resolve_app_config_dir(app: &AppHandle) -> Result<PathBuf, String> {
 }
 
 fn normalize_settings(mut settings: AppSettings) -> AppSettings {
-  // Backward compatibility for older local settings written before User CSS was removed.
-  if settings.theme_id == "user-custom" {
-    settings.theme_id = "night-blue".to_string();
-  }
-
   if settings.cursor_style != "block" {
     settings.cursor_style = "line".to_string();
   }
